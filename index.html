@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Enólogo">
+<meta name="theme-color" content="#0F0F10">
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23722F37'/><text x='90' y='120' font-family='Georgia' font-size='110' fill='%23D4A857' text-anchor='middle' font-weight='bold'>E</text></svg>">
+<link rel="manifest" href="data:application/json;utf8,{%22name%22:%22Enólogo%22,%22short_name%22:%22Enólogo%22,%22display%22:%22standalone%22,%22background_color%22:%22%230F0F10%22,%22theme_color%22:%22%230F0F10%22,%22start_url%22:%22./%22,%22icons%22:[{%22src%22:%22data:image/svg+xml;utf8,<svg xmlns=\\%22http://www.w3.org/2000/svg\\%22 viewBox=\\%220 0 180 180\\%22><rect width=\\%22180\\%22 height=\\%22180\\%22 rx=\\%2240\\%22 fill=\\%22%23722F37\\%22/><text x=\\%2290\\%22 y=\\%22120\\%22 font-family=\\%22Georgia\\%22 font-size=\\%22110\\%22 fill=\\%22%23D4A857\\%22 text-anchor=\\%22middle\\%22 font-weight=\\%22bold\\%22>E</text></svg>%22,%22sizes%22:%22180x180%22,%22type%22:%22image/svg+xml%22}]}">
+<title>Enólogo</title>
+<style>
+  :root {
+    --bg: #0F0F10;
+    --card: #1A1A1C;
+    --card-raised: #242428;
+    --border: #2E2E33;
+    --text: #F2F2F4;
+    --text-dim: #9A9AA0;
+    --text-faint: #5E5E66;
+    --accent: #D4A857;
+    --accent-dim: #8A6D38;
+    --wine: #722F37;
+    --wine-light: #A85566;
+    --success: #4ADE80;
+    --warning: #FBBF24;
+    --danger: #F87171;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow-x: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  h1, h2, h3, .serif { font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif; font-weight: 500; }
+
+  .app { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; }
+
+  .screen { display: none; flex: 1; flex-direction: column; padding: 20px; animation: fadeIn 0.25s ease; }
+  .screen.active { display: flex; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 20px; }
+  header h1 { font-size: 28px; color: var(--accent); letter-spacing: 0.5px; }
+  .icon-btn {
+    width: 40px; height: 40px; border-radius: 50%; border: none; background: var(--card);
+    color: var(--text-dim); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:active { background: var(--card-raised); }
+
+  /* Onboarding */
+  #onboarding { justify-content: center; align-items: center; text-align: center; padding: 40px 24px; }
+  #onboarding .logo {
+    width: 100px; height: 100px; border-radius: 24px; background: var(--wine);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 32px;
+    box-shadow: 0 20px 60px rgba(114, 47, 55, 0.4);
+  }
+  #onboarding .logo span { font-family: Georgia, serif; font-size: 56px; color: var(--accent); font-weight: bold; }
+  #onboarding h1 { font-size: 44px; margin-bottom: 12px; color: var(--text); }
+  #onboarding p.tagline { color: var(--text-dim); font-size: 16px; margin-bottom: 48px; max-width: 300px; }
+  #onboarding .steps { text-align: left; margin-bottom: 48px; max-width: 320px; width: 100%; }
+  #onboarding .step { display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
+  #onboarding .step-num {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--card-raised); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0;
+  }
+  #onboarding .step-text { color: var(--text-dim); font-size: 14px; }
+  #onboarding .step-text strong { color: var(--text); display: block; margin-bottom: 2px; font-weight: 500; }
+
+  /* API Key input */
+  .input-group { margin-bottom: 20px; width: 100%; }
+  .input-group label { display: block; color: var(--text-dim); font-size: 13px; margin-bottom: 8px; font-weight: 500; }
+  .input-group input, .input-group textarea, .input-group select {
+    width: 100%; padding: 14px 16px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; color: var(--text); font-size: 15px; font-family: inherit;
+    -webkit-appearance: none; appearance: none;
+  }
+  .input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+    outline: none; border-color: var(--accent-dim);
+  }
+  .input-group .hint { font-size: 12px; color: var(--text-faint); margin-top: 6px; }
+  .input-group .hint a { color: var(--accent-dim); text-decoration: underline; }
+
+  button.primary {
+    width: 100%; padding: 16px; background: var(--accent); color: #000;
+    border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button.primary:active { opacity: 0.8; }
+  button.primary:disabled { background: var(--card-raised); color: var(--text-faint); cursor: not-allowed; }
+  button.secondary {
+    width: 100%; padding: 14px; background: transparent; color: var(--text-dim);
+    border: 1px solid var(--border); border-radius: 12px; font-size: 15px; cursor: pointer;
+  }
+  button.ghost {
+    background: transparent; color: var(--text-dim); border: none; cursor: pointer;
+    font-size: 14px; padding: 8px; text-decoration: underline;
+  }
+
+  /* Adega */
+  .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; }
+  .empty-state .bottle-icon { font-size: 60px; margin-bottom: 20px; opacity: 0.4; }
+  .empty-state p { color: var(--text-dim); margin-bottom: 24px; }
+
+  .bottles-list { display: flex; flex-direction: column; gap: 12px; }
+  .bottle-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 16px;
+    display: flex; gap: 14px; cursor: pointer; transition: background 0.15s;
+  }
+  .bottle-card:active { background: var(--card-raised); }
+  .bottle-card img {
+    width: 60px; height: 80px; border-radius: 8px; object-fit: cover; flex-shrink: 0;
+    background: var(--card-raised);
+  }
+  .bottle-card .info { flex: 1; min-width: 0; }
+  .bottle-card .name { font-family: Georgia, serif; font-size: 17px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bottle-card .meta { color: var(--text-dim); font-size: 13px; margin-bottom: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .badge.drink_now { background: rgba(74, 222, 128, 0.15); color: var(--success); }
+  .badge.drink_soon { background: rgba(212, 168, 87, 0.15); color: var(--accent); }
+  .badge.wait { background: rgba(168, 85, 102, 0.15); color: var(--wine-light); }
+  .badge.past_peak { background: rgba(248, 113, 113, 0.15); color: var(--danger); }
+
+  .fab {
+    position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px;
+    width: 60px; height: 60px; border-radius: 50%; background: var(--accent); color: #000;
+    border: none; font-size: 28px; font-weight: 300; cursor: pointer; box-shadow: 0 10px 30px rgba(212, 168, 87, 0.3);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10;
+  }
+  .fab:active { transform: scale(0.95); }
+
+  /* Nova análise */
+  .photo-area {
+    width: 100%; aspect-ratio: 3/4; background: var(--card); border: 2px dashed var(--border);
+    border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin-bottom: 20px; overflow: hidden; cursor: pointer; position: relative;
+  }
+  .photo-area img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-area .placeholder { color: var(--text-dim); text-align: center; padding: 20px; }
+  .photo-area .placeholder .icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+  .photo-area .replace-badge {
+    position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white;
+    padding: 6px 12px; border-radius: 20px; font-size: 12px;
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip {
+    padding: 8px 14px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; color: var(--text-dim); font-size: 13px; cursor: pointer;
+  }
+  .chip.selected { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 500; }
+
+  /* Resultado / Ficha */
+  .ficha { padding-bottom: 100px; }
+  .ficha .hero { margin-bottom: 24px; }
+  .ficha .hero img { width: 100%; border-radius: 14px; margin-bottom: 16px; max-height: 240px; object-fit: cover; }
+  .ficha h2 { font-size: 28px; margin-bottom: 4px; color: var(--text); }
+  .ficha .wine-meta { color: var(--text-dim); font-size: 14px; margin-bottom: 16px; }
+  .ficha .verdict-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px;
+    margin-bottom: 20px; text-align: center;
+  }
+  .ficha .verdict-card .label { color: var(--text-faint); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .ficha .verdict-card .text { font-family: Georgia, serif; font-size: 20px; line-height: 1.3; }
+
+  .window-viz {
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px;
+    margin-bottom: 20px;
+  }
+  .window-viz h3 { font-size: 14px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; font-family: inherit; font-weight: 500; }
+  .window-bar { position: relative; height: 30px; margin: 20px 0 30px; }
+  .window-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--border); border-radius: 2px; transform: translateY(-50%); }
+  .window-fill { position: absolute; top: 50%; height: 4px; background: linear-gradient(90deg, var(--wine) 0%, var(--accent) 50%, var(--wine) 100%); border-radius: 2px; transform: translateY(-50%); }
+  .window-marker { position: absolute; top: 50%; width: 2px; height: 16px; background: var(--text-dim); transform: translate(-50%, -50%); }
+  .window-marker.now { background: var(--accent); height: 24px; width: 3px; }
+  .window-marker .label { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); font-size: 10px; color: var(--text-dim); white-space: nowrap; }
+  .window-marker.now .label { color: var(--accent); font-weight: 600; }
+  .window-years { display: flex; justify-content: space-between; margin-top: 24px; font-size: 11px; color: var(--text-faint); }
+
+  .section { margin-bottom: 20px; }
+  .section h3 { font-size: 13px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; font-family: inherit; font-weight: 500; }
+  .section .content { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px; font-size: 14px; line-height: 1.6; color: var(--text); }
+  .section .content p { margin-bottom: 10px; }
+  .section .content p:last-child { margin-bottom: 0; }
+
+  .alert { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .alert:last-child { border-bottom: none; }
+  .alert .alert-icon { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+  .alert.info .alert-icon { background: rgba(212, 168, 87, 0.15); color: var(--accent); }
+  .alert.warning .alert-icon { background: rgba(248, 113, 113, 0.15); color: var(--danger); }
+  .alert .alert-text { flex: 1; }
+  .alert .alert-title { font-weight: 500; margin-bottom: 2px; font-size: 14px; }
+  .alert .alert-desc { font-size: 13px; color: var(--text-dim); }
+
+  .serving-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .serving-item { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  .serving-item .k { font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .serving-item .v { font-size: 15px; color: var(--text); font-weight: 500; }
+  .pairings { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .pairing-tag { background: var(--card-raised); padding: 4px 10px; border-radius: 999px; font-size: 12px; color: var(--text-dim); }
+
+  .confidence-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .confidence-badge.high { background: rgba(74, 222, 128, 0.15); color: var(--success); }
+  .confidence-badge.medium { background: rgba(251, 191, 36, 0.15); color: var(--warning); }
+  .confidence-badge.low { background: rgba(248, 113, 113, 0.15); color: var(--danger); }
+
+  .action-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, transparent 0%, var(--bg) 30%, var(--bg) 100%);
+    display: flex; gap: 10px; max-width: 480px; margin: 0 auto;
+  }
+
+  /* Loading */
+  .loader-overlay {
+    position: fixed; inset: 0; background: rgba(15, 15, 16, 0.95); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(10px);
+  }
+  .spinner {
+    width: 50px; height: 50px; border: 3px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-overlay p { color: var(--text-dim); font-size: 14px; text-align: center; max-width: 260px; }
+  .loader-overlay .step-text { color: var(--accent); font-size: 13px; margin-top: 8px; font-style: italic; }
+
+  .toast {
+    position: fixed; top: calc(20px + env(safe-area-inset-top)); left: 50%; transform: translateX(-50%);
+    background: var(--card-raised); color: var(--text); padding: 12px 20px; border-radius: 10px;
+    border: 1px solid var(--border); font-size: 14px; z-index: 200; opacity: 0; transition: opacity 0.3s;
+    max-width: 90%; text-align: center;
+  }
+  .toast.show { opacity: 1; }
+  .toast.error { border-color: var(--danger); color: var(--danger); }
+
+  .back-btn { background: transparent; border: none; color: var(--text-dim); font-size: 16px; cursor: pointer; padding: 8px 0; display: flex; align-items: center; gap: 6px; margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Onboarding -->
+  <section class="screen" id="onboarding">
+    <div class="logo"><span>E</span></div>
+    <h1>Enólogo</h1>
+    <p class="tagline">O teu enólogo pessoal. Decide quando abrir cada garrafa.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text"><strong>Insere a tua chave Anthropic</strong>Fica guardada só no teu iPhone, nunca sai daqui.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text"><strong>Fotografa o rótulo</strong>O enólogo identifica o vinho e pesquisa online.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text"><strong>Recebe a ficha completa</strong>Janela de consumo, alertas e sugestão de serviço.</div>
+      </div>
+    </div>
+
+    <button class="primary" onclick="goTo('apiKey')">Começar</button>
+  </section>
+
+  <!-- API Key -->
+  <section class="screen" id="apiKey">
+    <button class="back-btn" onclick="goTo('onboarding')">‹ Voltar</button>
+    <h1 style="font-size: 32px; margin-bottom: 8px;">Chave Anthropic</h1>
+    <p style="color: var(--text-dim); margin-bottom: 24px; font-size: 14px;">A chave fica guardada apenas no teu dispositivo (localStorage). Nunca é enviada para servidor nenhum, só diretamente para a API da Anthropic.</p>
+
+    <div class="input-group">
+      <label>API Key</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <div class="hint">Obter em <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a></div>
+    </div>
+
+    <button class="primary" onclick="saveApiKey()">Guardar e continuar</button>
+  </section>
+
+  <!-- Adega -->
+  <section class="screen" id="adega">
+    <header>
+      <h1>Adega</h1>
+      <button class="icon-btn" onclick="goTo('settings')" aria-label="Definições">⚙</button>
+    </header>
+
+    <div id="bottlesList" class="bottles-list"></div>
+
+    <div id="emptyAdega" class="empty-state" style="display:none;">
+      <div class="bottle-icon">🍷</div>
+      <p>A tua adega está vazia.<br>Fotografa a primeira garrafa.</p>
+      <button class="primary" style="max-width: 240px;" onclick="goTo('nova')">Analisar vinho</button>
+    </div>
+
+    <button class="fab" onclick="goTo('nova')" aria-label="Nova análise">+</button>
+  </section>
+
+  <!-- Nova Análise -->
+  <section class="screen" id="nova">
+    <button class="back-btn" onclick="goTo('adega')">‹ Adega</button>
+    <h1 style="font-size: 28px; margin-bottom: 20px;">Nova análise</h1>
+
+    <label class="photo-area" for="photoInput" id="photoArea">
+      <div class="placeholder">
+        <div class="icon">📷</div>
+        <div>Tirar foto do rótulo</div>
+      </div>
+      <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhoto(event)">
+    </label>
+
+    <div class="input-group">
+      <label>Onde está guardada?</label>
+      <div class="chips" id="storageChips">
+        <div class="chip" data-value="Adega / cave (sem climatização)">Adega / cave</div>
+        <div class="chip" data-value="Adega climatizada">Climatizada</div>
+        <div class="chip" data-value="Prateleira em sala">Prateleira sala</div>
+        <div class="chip" data-value="Armário escuro">Armário</div>
+        <div class="chip" data-value="Frigorífico de vinhos">Frigo vinhos</div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Há quanto tempo (anos)?</label>
+      <input type="number" id="durationInput" min="0" max="50" step="0.5" placeholder="Ex: 2">
+    </div>
+
+    <div class="input-group">
+      <label>Notas (opcional)</label>
+      <textarea id="notesInput" rows="2" placeholder="Nível do líquido, rolha, estado..."></textarea>
+    </div>
+
+    <button class="primary" id="analyzeBtn" onclick="analyze()">Analisar</button>
+  </section>
+
+  <!-- Ficha -->
+  <section class="screen" id="ficha">
+    <button class="back-btn" onclick="goTo('adega')">‹ Adega</button>
+    <div class="ficha" id="fichaContent"></div>
+    <div class="action-bar">
+      <button class="secondary" onclick="markDrunk()" id="drunkBtn">Bebi esta garrafa</button>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section class="screen" id="settings">
+    <button class="back-btn" onclick="goTo('adega')">‹ Voltar</button>
+    <h1 style="font-size: 28px; margin-bottom: 24px;">Definições</h1>
+
+    <div class="input-group">
+      <label>API Key</label>
+      <input type="password" id="apiKeySettings" placeholder="sk-ant-..." autocomplete="off">
+      <div class="hint">Alterar a chave Anthropic guardada neste dispositivo.</div>
+    </div>
+    <button class="primary" onclick="updateApiKey()" style="margin-bottom: 24px;">Atualizar chave</button>
+
+    <div class="input-group">
+      <label>Modelo</label>
+      <select id="modelSelect">
+        <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (recomendado, ~€0.05/análise)</option>
+        <option value="claude-opus-4-7">Claude Opus 4.7 (máxima qualidade, ~€0.25/análise)</option>
+      </select>
+    </div>
+    <button class="primary" onclick="updateModel()" style="margin-bottom: 32px;">Guardar modelo</button>
+
+    <div style="margin-bottom: 20px; padding: 16px; background: var(--card); border-radius: 12px; font-size: 13px; color: var(--text-dim);">
+      <div style="color: var(--text); font-weight: 500; margin-bottom: 6px;">Garrafas guardadas: <span id="bottleCount">0</span></div>
+      Tudo guardado localmente neste dispositivo. Nenhuma sincronização, nenhum servidor.
+    </div>
+
+    <button class="secondary" onclick="exportData()" style="margin-bottom: 10px;">Exportar adega (JSON)</button>
+    <button class="secondary" onclick="clearData()" style="color: var(--danger); border-color: var(--danger);">Apagar tudo</button>
+  </section>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const STORAGE_KEYS = { apiKey: 'enologo_api_key', model: 'enologo_model', bottles: 'enologo_bottles' };
+
+const SYSTEM_PROMPT = `Tu és um enólogo pessoal a operar dentro do app Enólogo. Recebes uma foto de um rótulo de vinho e, opcionalmente, dados sobre a guarda da garrafa. Tens de identificar o vinho, pesquisar online (produtor, safra, janela de consumo segundo críticos) e devolver uma ficha enológica completa em JSON estruturado.
+
+# Princípios
+- Decisão baseada em evidência: produtor + safra + estilo + guarda
+- Calibração ao caso: vinho jovem cotidiano é diferente de Bordeaux classificado
+- Honestidade sobre incerteza: declara confiança "high", "medium" ou "low"
+- Sem chute: se não consegues identificar o vinho pela imagem, devolve confidence "low" e explica
+
+# Pesquisa
+Faz 2 a 5 pesquisas web direcionadas:
+1. Produtor + nome do vinho (identificação e estilo)
+2. Safra + região (relatório climático)
+3. Janela de consumo segundo críticos
+4. Alertas específicos da safra/produtor
+
+Fontes preferidas: Decanter, Jancis Robinson, Wine Spectator, Vinous, Wine-Searcher, CellarTracker, sites de associações regionais, revistas portuguesas (Revista de Vinhos, Grandes Escolhas) para vinhos lusos.
+
+# Output
+DEVES devolver APENAS um bloco JSON válido, sem qualquer texto antes ou depois, sem markdown fences. Schema:
+
+{
+  "wine": {
+    "name": "string",
+    "producer": "string",
+    "region": "string",
+    "country": "string",
+    "vintage": number,
+    "type": "tinto | branco | rosé | espumante | fortificado | doce",
+    "grapes": ["string"]
+  },
+  "drinking_window": {
+    "start_year": number,
+    "peak_start_year": number,
+    "peak_end_year": number,
+    "end_year": number
+  },
+  "verdict": {
+    "short": "string (uma frase com a recomendação)",
+    "action": "drink_now | drink_soon | wait | past_peak"
+  },
+  "justification": "string (3-5 parágrafos curtos sobre vinho, safra, guarda, cruzamento)",
+  "alerts": [{ "title": "string", "description": "string", "severity": "info | warning" }],
+  "serving": {
+    "temperature_celsius": number,
+    "decant_minutes": number,
+    "glass_type": "string",
+    "food_pairings": ["string"]
+  },
+  "confidence": "high | medium | low",
+  "confidence_notes": "string"
+}
+
+# Regras de mapeamento
+- "drink_now": pico atual, beber agora ou nos próximos 1-2 anos
+- "drink_soon": em janela, beber nos próximos 3-5 anos
+- "wait": ainda jovem demais, ganho claro em esperar
+- "past_peak": já passou do auge, abrir o quanto antes
+
+# Limites
+- Se não consegues identificar o vinho: confidence="low", preenche o melhor que conseguires, explica em confidence_notes. Não inventes.
+- Guarda problemática encurta a janela com explicação.
+
+# Idioma
+Português europeu. Termos técnicos em francês/italiano quando são o nome correto.`;
+
+let state = {
+  apiKey: localStorage.getItem(STORAGE_KEYS.apiKey) || '',
+  model: localStorage.getItem(STORAGE_KEYS.model) || 'claude-sonnet-4-6',
+  bottles: JSON.parse(localStorage.getItem(STORAGE_KEYS.bottles) || '[]'),
+  currentPhoto: null,
+  currentBottleId: null,
+};
+
+function init() {
+  if (!state.apiKey) {
+    goTo('onboarding');
+  } else {
+    goTo('adega');
+  }
+  document.getElementById('apiKeySettings').value = state.apiKey;
+  document.getElementById('modelSelect').value = state.model;
+  document.getElementById('bottleCount').textContent = state.bottles.length;
+
+  document.querySelectorAll('#storageChips .chip').forEach(c => {
+    c.addEventListener('click', () => {
+      document.querySelectorAll('#storageChips .chip').forEach(x => x.classList.remove('selected'));
+      c.classList.add('selected');
+    });
+  });
+}
+
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screen).classList.add('active');
+  window.scrollTo(0, 0);
+  if (screen === 'adega') renderAdega();
+}
+
+function toast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 3500);
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    toast('Chave inválida. Deve começar com sk-ant-', true);
+    return;
+  }
+  state.apiKey = key;
+  localStorage.setItem(STORAGE_KEYS.apiKey, key);
+  document.getElementById('apiKeySettings').value = key;
+  goTo('adega');
+}
+
+function updateApiKey() {
+  const key = document.getElementById('apiKeySettings').value.trim();
+  if (!key.startsWith('sk-ant-')) { toast('Chave inválida', true); return; }
+  state.apiKey = key;
+  localStorage.setItem(STORAGE_KEYS.apiKey, key);
+  toast('Chave atualizada');
+}
+
+function updateModel() {
+  state.model = document.getElementById('modelSelect').value;
+  localStorage.setItem(STORAGE_KEYS.model, state.model);
+  toast('Modelo guardado');
+}
+
+function renderAdega() {
+  const list = document.getElementById('bottlesList');
+  const empty = document.getElementById('emptyAdega');
+  if (state.bottles.length === 0) {
+    list.style.display = 'none';
+    empty.style.display = 'flex';
+    return;
+  }
+  list.style.display = 'flex';
+  empty.style.display = 'none';
+
+  const sorted = [...state.bottles].sort((a, b) => {
+    const order = { drink_now: 0, past_peak: 1, drink_soon: 2, wait: 3 };
+    return (order[a.ficha.verdict.action] ?? 9) - (order[b.ficha.verdict.action] ?? 9);
+  });
+
+  list.innerHTML = sorted.map(b => `
+    <div class="bottle-card" onclick="openFicha('${b.id}')">
+      <img src="${b.photo}" alt="">
+      <div class="info">
+        <div class="name">${b.ficha.wine.name}</div>
+        <div class="meta">${b.ficha.wine.producer} · ${b.ficha.wine.vintage || '—'}</div>
+        <span class="badge ${b.ficha.verdict.action}">${badgeLabel(b.ficha.verdict.action)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function badgeLabel(action) {
+  return { drink_now: 'Beber agora', drink_soon: 'Em janela', wait: 'Esperar', past_peak: 'Passou do pico' }[action] || action;
+}
+
+function handlePhoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    state.currentPhoto = evt.target.result;
+    const area = document.getElementById('photoArea');
+    area.innerHTML = `<img src="${state.currentPhoto}"><div class="replace-badge">Trocar foto</div><input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhoto(event)">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyze() {
+  if (!state.currentPhoto) { toast('Fotografa o rótulo primeiro', true); return; }
+  if (!state.apiKey) { toast('Falta a chave API', true); goTo('apiKey'); return; }
+
+  const storageEl = document.querySelector('#storageChips .chip.selected');
+  const storage = storageEl ? storageEl.dataset.value : null;
+  const duration = document.getElementById('durationInput').value;
+  const notes = document.getElementById('notesInput').value.trim();
+
+  const ctx = [];
+  if (storage) ctx.push(`Guarda: ${storage}`);
+  if (duration) ctx.push(`Tempo na guarda: ${duration} anos`);
+  if (notes) ctx.push(`Notas: ${notes}`);
+  const userText = ctx.length
+    ? `Analisa esta garrafa.\n\n${ctx.join('\n')}`
+    : 'Analisa esta garrafa. Sem dados adicionais sobre guarda.';
+
+  showLoader();
+
+  try {
+    const base64 = state.currentPhoto.split(',')[1];
+    const mediaType = state.currentPhoto.match(/data:(image\/\w+);/)[1];
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': state.apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: state.model,
+        max_tokens: 4000,
+        system: SYSTEM_PROMPT,
+        tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 5 }],
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+            { type: 'text', text: userText },
+          ],
+        }],
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`API ${res.status}: ${err.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+    const textBlocks = data.content.filter(b => b.type === 'text').map(b => b.text);
+    const finalText = textBlocks[textBlocks.length - 1] || '';
+    const cleaned = finalText.replace(/```json|```/g, '').trim();
+
+    let ficha;
+    try {
+      ficha = JSON.parse(cleaned);
+    } catch (e) {
+      const match = cleaned.match(/\{[\s\S]*\}/);
+      if (match) ficha = JSON.parse(match[0]);
+      else throw new Error('Resposta não é JSON válido');
+    }
+
+    const bottle = {
+      id: Date.now().toString(),
+      photo: state.currentPhoto,
+      ficha,
+      status: 'in_cellar',
+      created_at: new Date().toISOString(),
+    };
+
+    state.bottles.unshift(bottle);
+    localStorage.setItem(STORAGE_KEYS.bottles, JSON.stringify(state.bottles));
+    document.getElementById('bottleCount').textContent = state.bottles.length;
+
+    hideLoader();
+    state.currentBottleId = bottle.id;
+    document.getElementById('photoArea').innerHTML = `<div class="placeholder"><div class="icon">📷</div><div>Tirar foto do rótulo</div></div><input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none;" onchange="handlePhoto(event)">`;
+    state.currentPhoto = null;
+    document.getElementById('durationInput').value = '';
+    document.getElementById('notesInput').value = '';
+    document.querySelectorAll('#storageChips .chip').forEach(c => c.classList.remove('selected'));
+
+    renderFicha(bottle);
+    goTo('ficha');
+
+  } catch (err) {
+    hideLoader();
+    toast(err.message, true);
+    console.error(err);
+  }
+}
+
+function showLoader() {
+  const msgs = ['A identificar o vinho...', 'A pesquisar o produtor...', 'A verificar a safra...', 'A cruzar os dados...', 'A escrever a ficha...'];
+  const overlay = document.createElement('div');
+  overlay.className = 'loader-overlay';
+  overlay.id = 'loader';
+  overlay.innerHTML = `<div class="spinner"></div><p>A análise pode demorar 20-60 segundos.</p><p class="step-text" id="loaderStep">${msgs[0]}</p>`;
+  document.body.appendChild(overlay);
+  let i = 0;
+  overlay.interval = setInterval(() => {
+    i = (i + 1) % msgs.length;
+    document.getElementById('loaderStep').textContent = msgs[i];
+  }, 4000);
+}
+
+function hideLoader() {
+  const l = document.getElementById('loader');
+  if (l) { clearInterval(l.interval); l.remove(); }
+}
+
+function openFicha(id) {
+  const b = state.bottles.find(x => x.id === id);
+  if (!b) return;
+  state.currentBottleId = id;
+  renderFicha(b);
+  goTo('ficha');
+}
+
+function renderFicha(bottle) {
+  const f = bottle.ficha;
+  const w = f.wine;
+  const dw = f.drinking_window;
+  const currentYear = new Date().getFullYear();
+  const minYear = Math.min(dw.start_year, currentYear);
+  const maxYear = Math.max(dw.end_year, currentYear);
+  const span = maxYear - minYear || 1;
+  const pct = (y) => Math.max(0, Math.min(100, ((y - minYear) / span) * 100));
+
+  const drunkBtn = document.getElementById('drunkBtn');
+  drunkBtn.textContent = bottle.status === 'drunk' ? 'Já bebida' : 'Bebi esta garrafa';
+  drunkBtn.disabled = bottle.status === 'drunk';
+
+  const html = `
+    <div class="hero">
+      <img src="${bottle.photo}" alt="">
+      <h2>${w.name}</h2>
+      <div class="wine-meta">${w.producer} · ${w.region}, ${w.country} · ${w.vintage || '—'}</div>
+      <span class="confidence-badge ${f.confidence}">Confiança ${f.confidence}</span>
+    </div>
+
+    <div class="verdict-card">
+      <div class="label">Veredicto</div>
+      <div class="text">${f.verdict.short}</div>
+    </div>
+
+    <div class="window-viz">
+      <h3>Janela de consumo</h3>
+      <div class="window-bar">
+        <div class="window-track"></div>
+        <div class="window-fill" style="left: ${pct(dw.start_year)}%; right: ${100 - pct(dw.end_year)}%"></div>
+        <div class="window-marker" style="left: ${pct(dw.start_year)}%"><span class="label">${dw.start_year}</span></div>
+        <div class="window-marker" style="left: ${pct(dw.peak_start_year)}%"><span class="label">Pico</span></div>
+        <div class="window-marker" style="left: ${pct(dw.peak_end_year)}%"></div>
+        <div class="window-marker" style="left: ${pct(dw.end_year)}%"><span class="label">${dw.end_year}</span></div>
+        <div class="window-marker now" style="left: ${pct(currentYear)}%"><span class="label">Agora</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Justificativa técnica</h3>
+      <div class="content">${f.justification.split('\n').filter(p => p.trim()).map(p => `<p>${p}</p>`).join('')}</div>
+    </div>
+
+    ${f.alerts && f.alerts.length ? `
+    <div class="section">
+      <h3>Alertas ao abrir</h3>
+      <div class="content">
+        ${f.alerts.map(a => `
+          <div class="alert ${a.severity}">
+            <div class="alert-icon">${a.severity === 'warning' ? '!' : 'i'}</div>
+            <div class="alert-text">
+              <div class="alert-title">${a.title}</div>
+              <div class="alert-desc">${a.description}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>` : ''}
+
+    <div class="section">
+      <h3>Serviço</h3>
+      <div class="serving-grid">
+        <div class="serving-item">
+          <div class="k">Temperatura</div>
+          <div class="v">${f.serving.temperature_celsius}°C</div>
+        </div>
+        <div class="serving-item">
+          <div class="k">Decantação</div>
+          <div class="v">${f.serving.decant_minutes > 0 ? f.serving.decant_minutes + ' min' : 'Não'}</div>
+        </div>
+        <div class="serving-item" style="grid-column: span 2;">
+          <div class="k">Taça</div>
+          <div class="v">${f.serving.glass_type}</div>
+        </div>
+      </div>
+      ${f.serving.food_pairings && f.serving.food_pairings.length ? `
+        <div style="margin-top: 12px;">
+          <div style="font-size: 11px; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Harmonização</div>
+          <div class="pairings">${f.serving.food_pairings.map(p => `<span class="pairing-tag">${p}</span>`).join('')}</div>
+        </div>
+      ` : ''}
+    </div>
+
+    ${f.confidence_notes ? `
+    <div class="section">
+      <h3>Nota sobre confiança</h3>
+      <div class="content" style="font-size: 13px; color: var(--text-dim);">${f.confidence_notes}</div>
+    </div>` : ''}
+  `;
+
+  document.getElementById('fichaContent').innerHTML = html;
+}
+
+function markDrunk() {
+  if (!state.currentBottleId) return;
+  const b = state.bottles.find(x => x.id === state.currentBottleId);
+  if (!b) return;
+  if (!confirm('Marcar esta garrafa como bebida? Fica no histórico mas sai da adega ativa.')) return;
+  b.status = 'drunk';
+  b.drunk_at = new Date().toISOString();
+  localStorage.setItem(STORAGE_KEYS.bottles, JSON.stringify(state.bottles));
+  toast('Marcada como bebida. Saúde!');
+  setTimeout(() => goTo('adega'), 1000);
+}
+
+function exportData() {
+  const data = JSON.stringify(state.bottles, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `enologo-adega-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function clearData() {
+  if (!confirm('Apagar TODAS as garrafas da adega? Não dá para desfazer.')) return;
+  if (!confirm('Confirmar? Isto apaga mesmo tudo.')) return;
+  state.bottles = [];
+  localStorage.setItem(STORAGE_KEYS.bottles, '[]');
+  document.getElementById('bottleCount').textContent = '0';
+  toast('Adega apagada');
+  renderAdega();
+}
+
+init();
+</script>
+</body>
+</html>
